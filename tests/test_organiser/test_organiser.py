@@ -1,7 +1,10 @@
 import pandas as pd
 import pytest
 
+import src.utilities.definitions as definitions
+
 from src.organiser.organiser import Organiser
+
 
 # Test setups
 def create_test_participants():
@@ -20,6 +23,9 @@ def create_test_participants():
 
 
 TEST_PARTICIPANTS = create_test_participants()
+
+# Fix cluster per team to num participants
+CLUSTER_PER_TEAM = len(TEST_PARTICIPANTS)
 
 
 @pytest.fixture
@@ -41,7 +47,7 @@ def assert_team_hold_unique_members(teams):
 
 def test_distribute_to_one_group(tested):
     """Create 1 team to hold all participants"""
-    teams = tested.organise(num_teams=1)
+    teams = tested.organise(num_teams=1, cluster_per_team=CLUSTER_PER_TEAM)
 
     assert len(teams) == 1
     assert_team_hold_unique_members(teams)
@@ -51,7 +57,7 @@ def test_distribute_one_per_group(tested):
     """Number of teams equal to number of participants. 1 unique participant per team."""
 
     expected_num_teams = len(TEST_PARTICIPANTS)
-    teams = tested.organise(num_teams=expected_num_teams)
+    teams = tested.organise(num_teams=expected_num_teams, cluster_per_team=CLUSTER_PER_TEAM)
 
     assert len(teams) == expected_num_teams
 
@@ -66,7 +72,7 @@ def test_distribute_less_teams_than_participants(tested):
     """Distribute test participants to 2 teams. Each team should have 2 members."""
 
     expected_num_teams = 2
-    teams = tested.organise(num_teams=expected_num_teams)
+    teams = tested.organise(num_teams=expected_num_teams, cluster_per_team=CLUSTER_PER_TEAM)
 
     # Expect only 2 teams
     assert len(teams) == 2
@@ -81,7 +87,7 @@ def test_distribute_less_teams_than_participants(tested):
 def test_distribute_less_teams_than_participants_uneven(tested):
     """Distribute test participants to non-divisible number of teams."""
     expected_num_teams = 4
-    teams = tested.organise(num_teams=expected_num_teams)
+    teams = tested.organise(num_teams=expected_num_teams, cluster_per_team=CLUSTER_PER_TEAM)
 
     # Expect only 4 teams
     assert len(teams) == 4
@@ -94,7 +100,10 @@ def test_distribute_less_teams_than_participants_uneven(tested):
 
 
 def test_expection_when_teams_more_than_participants(tested):
+    """Expect error when there are more teams than participantsg"""
     num_teams = len(TEST_PARTICIPANTS) + 1
 
-    with pytest.raises(ValueError):
-        teams = tested.organise(num_teams=num_teams)
+    with pytest.raises(ValueError) as e:
+        teams = tested.organise(num_teams=num_teams, cluster_per_team=CLUSTER_PER_TEAM)
+
+    assert str(e.value) == definitions.too_many_teams_msg(num_teams, len(TEST_PARTICIPANTS))

@@ -20,7 +20,7 @@ class Organiser:
 
     Methods
     ----------
-    organise():
+    organise(num_teams: int, cluster_per_team: int):
         Main method to distribute participants into teams
 
     """
@@ -39,18 +39,21 @@ class Organiser:
     def _remove_assigned_column(self):
         self.participants.drop(self.COL_ASSIGNED, inplace=True, axis=1)
 
-    def organise(self, num_teams):
+    def organise(self, num_teams, cluster_per_team):
         """
         Distributes participants into teams
 
-        Parameters
+        Parameters:
         ----------
         num_teams: int
             Number of teams to create. Participants will be distributed as fairly as possible.
 
+        cluster_per_team: int
+            Maximum number of partcipants in a team belonging to the same cluster.
+
         Returns
         ----------
-        A list of teams, where each team contains a list of participant records.
+        list: A list of teams, where each team contains a list of team members in form [member_name, cluster_name].
         """
 
         self._create_assigned_column()
@@ -61,6 +64,11 @@ class Organiser:
         if num_teams > len(self.participants):
             raise ValueError(definitions.too_many_teams_msg(num_teams, len(self.participants)))
 
+        # Raise error if cluster_per_team is set to 0
+        if cluster_per_team == 0:
+            raise ValueError(definitions.zero_cluster_per_team())
+
+        # TODO: Redo members assignments portion to address max cluster_per_team issue
         team_counter = 0
         while not remaining_participants.empty:
             sample_member = remaining_participants.sample()
@@ -80,3 +88,7 @@ class Organiser:
 
         self._remove_assigned_column()
         return teams
+
+        # For testing if distribution is possible
+        # Clusters_per_team * Num of clusters >= Num of members per team
+        # If this is not fulfilled, not enough members to form a team. Distribution will fail.
