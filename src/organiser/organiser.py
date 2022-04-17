@@ -1,5 +1,7 @@
 """Contains the class for organising all participants into teams"""
 
+import utilities.definitions as definitions
+
 
 class Organiser:
     """
@@ -54,6 +56,10 @@ class Organiser:
         self._create_assigned_column()
         remaining_participants = self.participants.copy(deep=True)
         teams = [[] for i in range(num_teams)]
+
+        # Raise error if number of participants are fewer than number of required teams.
+        if num_teams > len(self.participants):
+            raise ValueError(definitions.too_many_teams_msg(num_teams, len(self.participants)))
 
         team_counter = 0
         while not remaining_participants.empty:

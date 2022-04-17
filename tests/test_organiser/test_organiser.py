@@ -91,3 +91,10 @@ def test_distribute_less_teams_than_participants_uneven(tested):
         assert len(team) <= 2
 
     assert_team_hold_unique_members(teams)
+
+
+def test_expection_when_teams_more_than_participants(tested):
+    num_teams = len(TEST_PARTICIPANTS) + 1
+
+    with pytest.raises(ValueError):
+        teams = tested.organise(num_teams=num_teams)
