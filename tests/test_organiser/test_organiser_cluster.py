@@ -12,10 +12,11 @@ from src.organiser.organiser import Organiser
 NUM_TEST_PARTICIPANTS = 12
 
 
-def create_test_participants():
+def create_test_participants(num_participants):
     participants = []
 
-    for i in range(NUM_TEST_PARTICIPANTS):
+    # Will always set 3 members per cluster
+    for i in range(num_participants):
         participant = [f"Member {i}", f"Cluster {int(i/3)}"]
         participants.append(participant)
 
@@ -24,7 +25,7 @@ def create_test_participants():
     return participants_df
 
 
-TEST_PARTICIPANTS = create_test_participants()
+TEST_PARTICIPANTS = create_test_participants(NUM_TEST_PARTICIPANTS)
 
 
 @pytest.fixture
@@ -104,9 +105,9 @@ def test_workable_single_member_cluster(tested):
     """Tests for workable setup when cluster_per_team == 1"""
 
     cluster_per_team = 1
-    # Team distribution is always possible if number of teams >= 3
+    # Team distribution is always possible if number of teams >= 4
     rand = SystemRandom()
-    num_teams = rand.randrange(start=3, stop=len(TEST_PARTICIPANTS))
+    num_teams = rand.randrange(start=4, stop=len(TEST_PARTICIPANTS))
 
     teams = tested.organise(num_teams, cluster_per_team)
 
@@ -128,3 +129,33 @@ def test_error_when_cluster_per_team_is_not_possible(tested):
         teams = tested.organise(num_teams, cluster_per_team)
 
     assert str(e.value) == definitions.cluster_per_team_too_low(cluster_per_team, num_teams)
+
+
+# Non-ideal unit test. Test outcomes must be specific and always reproducible!
+def test_fair_dstribution_of_teams(tested):
+    """
+    Tests organiser will always create distirbutions that are as even as possible.
+
+    N.B.: This test does not always produce the intended behaviour due to random nature of team distribution.
+    """
+    num_test_participants = 20
+    num_clusters = 7
+    participants = []
+    for i in range(num_test_participants):
+        cluster = int(i / (num_test_participants / num_clusters))
+        participant = [f"Member {i}", f"Cluster {cluster}"]
+        participants.append(participant)
+
+    participants_df = pd.DataFrame(participants, columns=["name", "cluster"])
+    print(participants_df)
+
+    cluster_per_team = 1
+    num_teams = 5
+    tested = Organiser(participants_df)
+    teams = tested.organise(num_teams, cluster_per_team)
+
+    print(teams)
+
+    expected_max_members = int(num_test_participants / num_teams) + 1
+    for team in teams:
+        assert 0 <= expected_max_members - len(team) <= 1

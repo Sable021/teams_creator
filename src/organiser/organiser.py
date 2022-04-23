@@ -3,6 +3,7 @@ import pandas as pd
 import utilities.definitions as definitions
 
 
+# TODO: To check if got another algorithm to fulfill distribution criteria
 class Organiser:
     """
     Randomly and fairly groups participants into teams based on given requirements.
@@ -46,6 +47,12 @@ class Organiser:
 
         return counter
 
+    def _is_cluster_full(self, teams_meta, team_counter, member_cluster, cluster_per_team):
+        return bool(teams_meta.loc[team_counter, member_cluster] >= cluster_per_team)
+
+    def _is_team_min_filled(self, teams, team_counter, min_num_members_per_team):
+        return bool(len(teams[team_counter]) >= min_num_members_per_team)
+
     def organise(self, num_teams, cluster_per_team):
         """
         Distributes participants into teams
@@ -69,6 +76,9 @@ class Organiser:
         clusters = self.participants["cluster"].unique()
         num_clusters = len(clusters)
 
+        min_num_members_per_team = int(len(self.participants) / num_teams)
+        max_num_members_per_team = min_num_members_per_team + 1
+
         np_meta = [[0] * num_clusters] * num_teams
         teams_meta = pd.DataFrame(np_meta, columns=self.participants["cluster"].unique())
 
@@ -81,8 +91,7 @@ class Organiser:
             raise ValueError(definitions.zero_cluster_per_team())
 
         # Raise error if cluster_per_team and num_teams will result in impossible team distribution
-        num_members_per_team = int(len(self.participants) / num_teams)
-        if cluster_per_team * num_clusters < num_members_per_team:
+        if cluster_per_team * num_clusters < max_num_members_per_team:
             raise ValueError(definitions.cluster_per_team_too_low(cluster_per_team, num_teams))
 
         team_counter = 0
@@ -92,9 +101,17 @@ class Organiser:
 
             # Check if current team can accept cluster member
             member_cluster = sample_member.at[sample_index, "cluster"]
-            while teams_meta.loc[team_counter, member_cluster] >= cluster_per_team:
+            curr_counter = team_counter
+            while self._is_cluster_full(
+                teams_meta, team_counter, member_cluster, cluster_per_team
+            ) or self._is_team_min_filled(teams, team_counter, min_num_members_per_team):
+
                 # Update team_counter
                 team_counter = self._update_team_counter(team_counter, num_teams)
+
+                # If all the teams cannot fulfil conditions, then update original team
+                if team_counter == curr_counter:
+                    break
 
             member = [sample_member.at[sample_index, "name"], member_cluster]
             teams[team_counter].append(member)

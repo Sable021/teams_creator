@@ -1,11 +1,11 @@
 team,name,cluster
-0,Akash,AI-Enabled C3
-0,Tan Kah Siong,AI Engineering
-0,Lau Wei Cheng,Autonomy
+0,Derek Chew,AI-Enabled C3
+0,Benjamin Loo,Autonomy
 1,Mervyn Chua Wee Kiat,AI-Enabled ISR
-2,Jonthan Tan,Autonomy
+1,Akash,AI-Enabled C3
+2,Lyn Chow,Data Analytics
 2,Lew Ee Kent,AI-Enabled ISR
-3,Benjamin Loo,Autonomy
-3,Lyn Chow,Data Analytics
-4,Wong Fu Jie,AI Engineering
-4,Derek Chew,AI-Enabled C3
+3,Lau Wei Cheng,Autonomy
+3,Wong Fu Jie,AI Engineering
+4,Tan Kah Siong,AI Engineering
+4,Jonthan Tan,Autonomy
