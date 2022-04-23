@@ -57,7 +57,7 @@ def test_error_when_cluster_per_team_is_0(tested):
 
 
 def test_workable_cluster_value(tested):
-    """Tests for workable and significant cluster_per_team values."""
+    """Tests for workable and non-trivial cluster_per_team values."""
 
     cluster_per_team = 2
     num_teams = 3

@@ -1,5 +1,6 @@
 """Contains the class for organising all participants into teams"""
-
+import numpy as np
+import pandas as pd
 import utilities.definitions as definitions
 
 
@@ -39,6 +40,13 @@ class Organiser:
     def _remove_assigned_column(self):
         self.participants.drop(self.COL_ASSIGNED, inplace=True, axis=1)
 
+    def _update_team_counter(self, counter, num_teams):
+        counter += 1
+        if counter == num_teams:
+            counter = 0
+
+        return counter
+
     def organise(self, num_teams, cluster_per_team):
         """
         Distributes participants into teams
@@ -59,6 +67,11 @@ class Organiser:
         self._create_assigned_column()
         remaining_participants = self.participants.copy(deep=True)
         teams = [[] for i in range(num_teams)]
+        clusters = self.participants["cluster"].unique()
+        num_clusters = len(clusters)
+
+        np_meta = [[0] * num_clusters] * num_teams
+        teams_meta = pd.DataFrame(np_meta, columns=self.participants["cluster"].unique())
 
         # Raise error if number of participants are fewer than number of required teams.
         if num_teams > len(self.participants):
@@ -68,23 +81,29 @@ class Organiser:
         if cluster_per_team == 0:
             raise ValueError(definitions.zero_cluster_per_team())
 
-        # TODO: Redo members assignments portion to address max cluster_per_team issue
         team_counter = 0
         while not remaining_participants.empty:
             sample_member = remaining_participants.sample()
             sample_index = sample_member.index[0]
 
-            member = [sample_member.at[sample_index, "name"], sample_member.at[sample_index, "cluster"]]
+            # Check if current team can accept cluster member
+            member_cluster = sample_member.at[sample_index, "cluster"]
+            while teams_meta.loc[team_counter, member_cluster] >= cluster_per_team:
+                # Update team_counter
+                team_counter = self._update_team_counter(team_counter, num_teams)
+
+            member = [sample_member.at[sample_index, "name"], member_cluster]
             teams[team_counter].append(member)
+
+            # Update teams_meta
+            teams_meta.loc[team_counter, member_cluster] += 1
 
             # Remove participants from pool
             remaining_participants.drop(inplace=True, index=sample_index, axis=0)
             self.participants.loc[(self.participants["name"] == member[0]), self.COL_ASSIGNED] = True
 
             # Update team_counter
-            team_counter += 1
-            if team_counter == num_teams:
-                team_counter = 0
+            team_counter = self._update_team_counter(team_counter, num_teams)
 
         self._remove_assigned_column()
         return teams
