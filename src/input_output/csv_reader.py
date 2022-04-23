@@ -17,7 +17,7 @@ class CsvReader:
 
     Methods
     ----------
-    read_file(file=str):
+    read_file(file: str):
         Reads the CSV file and returns the list of participants.
 
     get_participants():

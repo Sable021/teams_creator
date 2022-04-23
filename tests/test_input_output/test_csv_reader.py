@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.reader.csv_reader import CsvReader
+from src.input_output.csv_reader import CsvReader
 
 TEST_PATH = "./tests/test_data/"
 TEST_FILE_SINGLE = "test_participants_single.csv"
