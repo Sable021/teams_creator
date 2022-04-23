@@ -1,5 +1,4 @@
 """Contains the class for organising all participants into teams"""
-import numpy as np
 import pandas as pd
 import utilities.definitions as definitions
 
