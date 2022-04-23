@@ -81,6 +81,11 @@ class Organiser:
         if cluster_per_team == 0:
             raise ValueError(definitions.zero_cluster_per_team())
 
+        # Raise error if cluster_per_team and num_teams will result in impossible team distribution
+        num_members_per_team = int(len(self.participants) / num_teams)
+        if cluster_per_team * num_clusters < num_members_per_team:
+            raise ValueError(definitions.cluster_per_team_too_low(cluster_per_team, num_teams))
+
         team_counter = 0
         while not remaining_participants.empty:
             sample_member = remaining_participants.sample()
@@ -107,7 +112,3 @@ class Organiser:
 
         self._remove_assigned_column()
         return teams
-
-        # For testing if distribution is possible
-        # Clusters_per_team * Num of clusters >= Num of members per team
-        # If this is not fulfilled, not enough members to form a team. Distribution will fail.
