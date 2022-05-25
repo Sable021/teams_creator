@@ -3,7 +3,7 @@
 This python application will split up a large group of participants into smaller teams, based on provided parameters.
 
 Usage:
-At root folder, run command "py src/main.py <participants_file>".
+At root folder, run command "py src/main.py <participants_file> <num_teams> <max_cluster_members_per_team> <output_file>".
 
 Parameters:
 1. List of participants to split
